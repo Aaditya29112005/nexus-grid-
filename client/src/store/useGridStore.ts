@@ -103,6 +103,16 @@ interface GridStore {
   viewportH: number;
   setViewport: (x: number, y: number, zoom: number) => void;
   setViewportSize: (w: number, h: number) => void;
+
+  // Phase 2 variables
+  selectedTileId: string | null;
+  setSelectedTileId: (id: string | null) => void;
+  isHeatmapMode: boolean;
+  setHeatmapMode: (active: boolean) => void;
+  weather: 'clear' | 'rain' | 'snow' | 'glitch';
+  setWeather: (type: 'clear' | 'rain' | 'snow' | 'glitch') => void;
+  clashingTiles: Record<string, boolean>;
+  triggerClash: (tileId: string) => void;
 }
 
 const GRADIENT_POOL = [
@@ -295,4 +305,24 @@ export const useGridStore = create<GridStore>((set, get) => ({
   viewportH: 600,
   setViewport: (x, y, zoom) => set({ viewportX: x, viewportY: y, viewportZoom: zoom }),
   setViewportSize: (w, h) => set({ viewportW: w, viewportH: h }),
+
+  // Phase 2 implementations
+  selectedTileId: null,
+  setSelectedTileId: (id) => set({ selectedTileId: id }),
+  isHeatmapMode: false,
+  setHeatmapMode: (active) => set({ isHeatmapMode: active }),
+  weather: 'clear',
+  setWeather: (type) => set({ weather: type }),
+  clashingTiles: {},
+  triggerClash: (tileId) => set((state) => {
+    const nextClashes = { ...state.clashingTiles, [tileId]: true };
+    setTimeout(() => {
+      useGridStore.setState((prev) => {
+        const next = { ...prev.clashingTiles };
+        delete next[tileId];
+        return { clashingTiles: next };
+      });
+    }, 500);
+    return { clashingTiles: nextClashes };
+  }),
 }));

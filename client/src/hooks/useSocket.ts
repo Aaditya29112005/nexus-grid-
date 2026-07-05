@@ -24,6 +24,7 @@ export function useSocket() {
   } = useGridStore();
 
   const socketRef = useRef<Socket | null>(null);
+  const originalTilesRef = useRef<Record<string, GridTile>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -113,13 +114,18 @@ export function useSocket() {
     });
 
     socket.on('capture_failed', (data: { tileId: string; error: string }) => {
-      // If we failed, toast user
+      // Trigger clash shake effect
+      useGridStore.getState().triggerClash(data.tileId);
+
+      // Rollback to cached pre-optimistic state
+      const original = originalTilesRef.current[data.tileId];
+      if (original) {
+        updateTile(original);
+        delete originalTilesRef.current[data.tileId];
+      }
+
+      // Trigger warning notification
       addNotification(data.error, 'alert');
-      
-      // Trigger rollback animation by reloading the tile from server/database
-      // Let's refetch the specific tile or let the store resolve.
-      // Wait, we can fetch the fresh grid state to sync or the payload could contain the tile's current owner.
-      // In this case, we rollback the tile to its original server state.
     });
 
     socket.on('territory_update', (data: { regionId: string; ownerId: string | null; color: string | null }) => {
@@ -187,6 +193,9 @@ export function useSocket() {
     
     // Optimistic UI Update: immediately claim cell locally
     const originalTile = useGridStore.getState().tiles[tileId];
+    if (originalTile) {
+      originalTilesRef.current[tileId] = originalTile;
+    }
     
     const optimisticTile: GridTile = {
       id: tileId,

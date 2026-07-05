@@ -121,3 +121,28 @@ body {
 .glow-active {
   animation: grid-glow 2s infinite alternate;
 }
+
+/* Conflict Clash Shake Animation */
+.tile-clash-shake {
+  animation: clash-shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  z-index: 20;
+}
+
+@keyframes clash-shake {
+  10%, 90% {
+    transform: translate3d(-2px, 0, 0) scale(1.05);
+  }
+  20%, 80% {
+    transform: translate3d(3px, 0, 0) scale(1.05);
+  }
+  30%, 50%, 70% {
+    transform: translate3d(-5px, 0, 0) scale(1.05);
+  }
+  40%, 60% {
+    transform: translate3d(5px, 0, 0) scale(1.05);
+  }
+}
+

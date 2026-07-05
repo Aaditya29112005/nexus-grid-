@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect, MouseEvent } from 'react';
 import { useGridStore, GridTile } from '../store/useGridStore';
 import { useSocket } from '../hooks/useSocket';
 import { motion, AnimatePresence } from 'framer-motion';
+import WeatherEngine from './WeatherEngine';
 
 const TILE_SIZE = 40; // Size of each tile in px
 const GRID_SIZE = 100; // 100 x 100 grid
@@ -29,6 +30,9 @@ export default function GridViewport() {
     viewportZoom: zoom,
     setViewport,
     setViewportSize,
+    isHeatmapMode,
+    clashingTiles,
+    setSelectedTileId,
   } = useGridStore();
 
   const { emitCursorMove, emitCapture } = useSocket();
@@ -147,6 +151,7 @@ export default function GridViewport() {
     if (isPanning || isReplayActive) return;
     
     const tileId = `${x},${y}`;
+    setSelectedTileId(tileId);
     const now = Date.now();
     
     // Verify tile cooldown
@@ -227,6 +232,9 @@ export default function GridViewport() {
       className="relative w-full h-full bg-grid-cyber select-none cursor-crosshair overflow-hidden"
       style={{ backgroundPosition: `${panX}px ${panY}px` }}
     >
+      {/* Weather canvas particles */}
+      <WeatherEngine />
+
       {/* Radial neon glow behind grid */}
       <div className="absolute inset-0 bg-radial-glow pointer-events-none" />
 
@@ -254,25 +262,48 @@ export default function GridViewport() {
           };
 
           const isCooldown = cooldownTiles[tileId] && Date.now() < cooldownTiles[tileId];
-          const hasOwner = !!tile.color;
+          const isClashing = clashingTiles[tileId];
+          const hasOwner = !isHeatmapMode && !!tile.color;
+
+          // Heatmap view vs normal owner color
+          let backgroundStyle = tile.color || 'rgba(12, 10, 25, 0.4)';
+          if (isHeatmapMode) {
+            const count = tile.captureCount || 0;
+            if (count === 0) {
+              backgroundStyle = 'rgba(12, 10, 25, 0.2)';
+            } else {
+              // Hue ranges 240 (blue/cold) down to 0 (red/hot)
+              const hue = Math.max(0, 240 - count * 15);
+              backgroundStyle = `hsl(${hue}, 100%, 48%)`;
+            }
+          }
 
           return (
             <div
               key={tileId}
               onClick={(e) => handleTileClick(x, y, e)}
-              className="grid-tile absolute border border-[rgba(255,255,255,0.03)] flex items-center justify-center transition-all duration-300 hover:border-pink-500 hover:scale-105 hover:z-10 hover:shadow-[0_0_15px_rgba(236,72,153,0.4)]"
+              className={`grid-tile absolute border border-[rgba(255,255,255,0.03)] flex items-center justify-center transition-all duration-300 hover:border-pink-500 hover:scale-105 hover:z-10 hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] ${
+                isClashing ? 'tile-clash-shake' : ''
+              }`}
               style={{
                 left: x * TILE_SIZE,
                 top: y * TILE_SIZE,
                 width: TILE_SIZE,
                 height: TILE_SIZE,
-                background: tile.color || 'rgba(12, 10, 25, 0.4)',
+                background: backgroundStyle,
                 cursor: isCooldown || isReplayActive ? 'not-allowed' : 'pointer',
               }}
             >
+              {/* Clash clash indicator overlay */}
+              {isClashing && (
+                <div className="absolute inset-0 bg-red-600/30 flex items-center justify-center text-xs font-black z-20 animate-ping">
+                  ⚔️
+                </div>
+              )}
+
               {/* Tile Owner Avatar indicator */}
               {hasOwner && (
-                <span className="text-xs pointer-events-none select-none select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                <span className="text-xs pointer-events-none select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                   {tile.avatar}
                 </span>
               )}

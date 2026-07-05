@@ -10,6 +10,7 @@ import MiniMap from '../components/MiniMap';
 import HistoryReplay from '../components/HistoryReplay';
 import DevDashboard from '../components/DevDashboard';
 import Toaster from '../components/Toaster';
+import TileDnaDrawer from '../components/TileDnaDrawer';
 import { Settings, RefreshCw } from 'lucide-react';
 
 export default function Home() {
@@ -136,6 +137,9 @@ export default function Home() {
 
         {/* History Logger right sidebar */}
         <RightSidebar />
+
+        {/* Tile DNA details slide drawer */}
+        <TileDnaDrawer />
       </main>
     </div>
   );
