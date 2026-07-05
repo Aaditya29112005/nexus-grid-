@@ -113,6 +113,14 @@ interface GridStore {
   setWeather: (type: 'clear' | 'rain' | 'snow' | 'glitch') => void;
   clashingTiles: Record<string, boolean>;
   triggerClash: (tileId: string) => void;
+
+  // Phase 3 variables
+  socketLogs: Array<{ id: string; type: 'in' | 'out'; event: string; payload: any; timestamp: number }>;
+  addSocketLog: (type: 'in' | 'out', event: string, payload: any) => void;
+  serverEvent: 'clear' | 'earthquake' | 'eclipse' | 'blackhole';
+  setServerEvent: (evt: 'clear' | 'earthquake' | 'eclipse' | 'blackhole') => void;
+  lastSuccessTimestamp: number;
+  triggerSuccessPulse: () => void;
 }
 
 const GRADIENT_POOL = [
@@ -325,4 +333,27 @@ export const useGridStore = create<GridStore>((set, get) => ({
     }, 500);
     return { clashingTiles: nextClashes };
   }),
+
+  // Phase 3 implementations
+  socketLogs: [],
+  addSocketLog: (type, event, payload) => set((state) => {
+    const nextLogs = [
+      {
+        id: Math.random().toString(36).substring(2, 9),
+        type,
+        event,
+        payload,
+        timestamp: Date.now(),
+      },
+      ...state.socketLogs,
+    ];
+    if (nextLogs.length > 50) {
+      nextLogs.pop();
+    }
+    return { socketLogs: nextLogs };
+  }),
+  serverEvent: 'clear',
+  setServerEvent: (evt) => set({ serverEvent: evt }),
+  lastSuccessTimestamp: 0,
+  triggerSuccessPulse: () => set({ lastSuccessTimestamp: Date.now() }),
 }));

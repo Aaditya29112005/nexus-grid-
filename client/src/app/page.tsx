@@ -11,6 +11,7 @@ import HistoryReplay from '../components/HistoryReplay';
 import DevDashboard from '../components/DevDashboard';
 import Toaster from '../components/Toaster';
 import TileDnaDrawer from '../components/TileDnaDrawer';
+import NewsTicker from '../components/NewsTicker';
 import { Settings, RefreshCw } from 'lucide-react';
 
 export default function Home() {
@@ -86,6 +87,9 @@ export default function Home() {
 
       {/* Header TopBar */}
       <TopBar />
+
+      {/* AI News Channel Horizontal Marquee Ticker */}
+      <NewsTicker />
 
       <main className="flex-1 flex relative overflow-hidden">
         {/* Leaderboard left sidebar */}

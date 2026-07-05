@@ -21,6 +21,8 @@ export function useSocket() {
     updateUserScore,
     updateRegionControl,
     latencySimulatedDelay,
+    addSocketLog,
+    triggerSuccessPulse,
   } = useGridStore();
 
   const socketRef = useRef<Socket | null>(null);
@@ -56,21 +58,25 @@ export function useSocket() {
 
     socket.on('connect', () => {
       setConnected(true);
+      addSocketLog('in', 'connect', { socketId: socket.id });
       
       // Join server room with our guest profile
       socket.emit('join', user);
+      addSocketLog('out', 'join', user);
       
       startPingTracking();
     });
 
     socket.on('disconnect', () => {
       setConnected(false);
+      addSocketLog('in', 'disconnect', null);
       clearInterval(pingInterval);
     });
 
     // Multiplayer listeners
     socket.on('presence_update', (data: { count: number; users: any[] }) => {
       setPresenceList(data.users);
+      addSocketLog('in', 'presence_update', { count: data.count });
     });
 
     socket.on('cursor_update', (data: { userId: string; username: string; x: number; y: number }) => {
@@ -81,10 +87,14 @@ export function useSocket() {
 
     socket.on('cursor_remove', (userId: string) => {
       removeCursor(userId);
+      addSocketLog('in', 'cursor_remove', { userId });
     });
 
     // Real-time synchronization
     socket.on('capture_success', (payload: { tile: GridTile; combo: number; scoreGain: number; history: HistoryEvent }) => {
+      addSocketLog('in', 'capture_success', { tileId: payload.tile.id, username: payload.tile.username });
+      triggerSuccessPulse();
+
       // Play Confetti burst if WE captured the tile
       const isMyCapture = payload.tile.ownerId === user.id;
       if (isMyCapture) {
@@ -114,6 +124,8 @@ export function useSocket() {
     });
 
     socket.on('capture_failed', (data: { tileId: string; error: string }) => {
+      addSocketLog('in', 'capture_failed', data);
+
       // Trigger clash shake effect
       useGridStore.getState().triggerClash(data.tileId);
 
@@ -129,6 +141,7 @@ export function useSocket() {
     });
 
     socket.on('territory_update', (data: { regionId: string; ownerId: string | null; color: string | null }) => {
+      addSocketLog('in', 'territory_update', data);
       updateRegionControl(data.regionId, data.ownerId, data.color);
       
       if (data.ownerId) {
@@ -143,10 +156,12 @@ export function useSocket() {
     });
 
     socket.on('achievement_unlocked', (ach: { id: string; title: string; description: string }) => {
+      addSocketLog('in', 'achievement_unlocked', ach);
       addNotification(`Achievement Unlocked: ${ach.title} - ${ach.description}`, 'achievement');
     });
 
     socket.on('system_notification', (data: { message: string; type: string }) => {
+      addSocketLog('in', 'system_notification', data);
       addNotification(data.message, 'info');
     });
 
@@ -210,6 +225,7 @@ export function useSocket() {
     // Apply optimistic update locally
     updateTile(optimisticTile);
     useGridStore.getState().addCooldownTile(tileId, 5000);
+    addSocketLog('out', 'capture', { tileId, userId: user.id });
 
     // Emit capture socket event with simulated lag delay if configured
     if (latencySimulatedDelay > 0) {

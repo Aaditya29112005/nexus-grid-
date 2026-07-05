@@ -39,6 +39,35 @@ export default function TileDnaDrawer() {
   // Heat computation
   const heatLevel = Math.min(100, battleCount * 8);
 
+  // Civilization Evolution Levels
+  let civEvolution = '🌱 Grasslands';
+  if (battleCount >= 20) civEvolution = '🌌 Cyber City';
+  else if (battleCount >= 10) civEvolution = '🏙️ Mega City';
+  else if (battleCount >= 5) civEvolution = '🏢 Modern City';
+  else if (battleCount >= 2) civEvolution = '🏡 Rural Village';
+
+  // Stability calculations (based on owner ratio over battles)
+  let stability = 100;
+  let stabilityStatus = 'Loyal Citizens 🤝';
+  let stabilityColor = 'text-green-400';
+
+  if (battleCount > 0) {
+    const ownerVolatility = uniqueOwnersCount / battleCount;
+    if (ownerVolatility >= 0.75) {
+      stability = 8;
+      stabilityStatus = 'Rebellious Anarchy ⚔️';
+      stabilityColor = 'text-red-500 animate-pulse';
+    } else if (ownerVolatility >= 0.5) {
+      stability = 32;
+      stabilityStatus = 'Hostile Strikes 🛡️';
+      stabilityColor = 'text-orange-500';
+    } else if (ownerVolatility >= 0.25) {
+      stability = 68;
+      stabilityStatus = 'Minor Rioting 📢';
+      stabilityColor = 'text-yellow-500';
+    }
+  }
+
   return (
     <motion.div
       initial={{ x: 300, opacity: 0 }}
@@ -94,6 +123,22 @@ export default function TileDnaDrawer() {
                 className={i < stars ? 'text-yellow-500' : 'text-gray-600'}
               />
             ))}
+          </span>
+        </div>
+        
+        {/* Civ Evolution Stage */}
+        <div className="bg-white/5 border border-white/5 p-2 rounded flex flex-col col-span-2">
+          <span className="text-[9px] text-gray-500 uppercase font-semibold">AI Civilization tier</span>
+          <span className="font-bold text-gray-200 mt-0.5">
+            {civEvolution}
+          </span>
+        </div>
+
+        {/* Civ Rebellion Stability */}
+        <div className="bg-white/5 border border-white/5 p-2 rounded flex flex-col col-span-2">
+          <span className="text-[9px] text-gray-500 uppercase font-semibold">Civilization Stability</span>
+          <span className={`font-bold text-[11px] mt-0.5 ${stabilityColor}`}>
+            {stability}% - {stabilityStatus}
           </span>
         </div>
       </div>

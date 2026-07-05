@@ -33,6 +33,7 @@ export default function GridViewport() {
     isHeatmapMode,
     clashingTiles,
     setSelectedTileId,
+    serverEvent,
   } = useGridStore();
 
   const { emitCursorMove, emitCapture } = useSocket();
@@ -46,6 +47,30 @@ export default function GridViewport() {
   
   // Click particles emitter
   const [particles, setParticles] = useState<Particle[]>([]);
+
+  // Cursor Trails state for multiplayer glowing tails
+  const [cursorTrails, setCursorTrails] = useState<Record<string, Array<{ x: number; y: number; id: string }>>>({});
+
+  useEffect(() => {
+    setCursorTrails((prev) => {
+      const nextTrails = { ...prev };
+      let changed = false;
+
+      for (const [userId, pos] of Object.entries(cursors)) {
+        const existing = nextTrails[userId] || [];
+        if (existing.length === 0 || existing[0].x !== pos.x || existing[0].y !== pos.y) {
+          const updated = [
+            { x: pos.x, y: pos.y, id: `${userId}-${Date.now()}-${Math.random()}` },
+            ...existing,
+          ].slice(0, 4);
+          nextTrails[userId] = updated;
+          changed = true;
+        }
+      }
+
+      return changed ? nextTrails : prev;
+    });
+  }, [cursors]);
 
   // Update viewport size tracking
   useEffect(() => {
@@ -229,11 +254,21 @@ export default function GridViewport() {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      className="relative w-full h-full bg-grid-cyber select-none cursor-crosshair overflow-hidden"
+      className={`relative w-full h-full bg-grid-cyber select-none cursor-crosshair overflow-hidden ${
+        serverEvent === 'eclipse' ? 'brightness-50 saturate-150 transition-all duration-1000' : ''
+      }`}
       style={{ backgroundPosition: `${panX}px ${panY}px` }}
     >
       {/* Weather canvas particles */}
       <WeatherEngine />
+
+      {/* Solar Eclipse starry night space particles */}
+      {serverEvent === 'eclipse' && (
+        <div className="absolute inset-0 bg-[#000518]/70 pointer-events-none z-20 overflow-hidden mix-blend-color-dodge">
+          <div className="absolute top-1/4 left-1/3 w-64 h-64 rounded-full bg-pink-500/10 blur-[120px] animate-pulse" />
+          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-cyan-500/10 blur-[130px] animate-pulse" />
+        </div>
+      )}
 
       {/* Radial neon glow behind grid */}
       <div className="absolute inset-0 bg-radial-glow pointer-events-none" />
@@ -241,6 +276,7 @@ export default function GridViewport() {
       {/* Grid Canvas Board Container */}
       <div
         ref={boardRef}
+        className={serverEvent === 'earthquake' ? 'tile-clash-shake' : ''}
         style={{
           transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
           transformOrigin: '0 0',
@@ -249,6 +285,21 @@ export default function GridViewport() {
           position: 'absolute',
         }}
       >
+        {/* Black Hole cosmic visual at center of grid */}
+        {serverEvent === 'blackhole' && (
+          <div
+            className="absolute z-20 pointer-events-none rounded-full border-4 border-dashed border-pink-500/40 animate-spin"
+            style={{
+              left: (GRID_SIZE * TILE_SIZE) / 2 - 200,
+              top: (GRID_SIZE * TILE_SIZE) / 2 - 200,
+              width: 400,
+              height: 400,
+              background: 'radial-gradient(circle, #000000 35%, transparent 75%)',
+              boxShadow: '0 0 50px #ff007a, inset 0 0 40px #7b2cbf',
+              animationDuration: '10s',
+            }}
+          />
+        )}
         {/* Render visible virtualized tiles */}
         {visibleTiles.map(({ x, y }) => {
           const tileId = `${x},${y}`;
@@ -320,6 +371,32 @@ export default function GridViewport() {
 
         {/* 5x5 Regions Borders */}
         {renderRegionBorders()}
+
+        {/* Cursor Trails Renderer */}
+        {Object.entries(cursorTrails).map(([userId, points]) => {
+          const profile = useGridStore.getState().presenceList.find((p) => p.id === userId);
+          const color = profile ? (profile.color.includes('gradient') ? '#FF007A' : profile.color) : '#00F0FF';
+          return points.slice(1).map((pt, idx) => {
+            const opacity = (4 - idx) * 0.15;
+            const scale = (4 - idx) * 0.2 + 0.2;
+            return (
+              <div
+                key={pt.id}
+                className="absolute pointer-events-none rounded-full blur-[1px] z-30"
+                style={{
+                  left: pt.x,
+                  top: pt.y,
+                  width: 8,
+                  height: 8,
+                  background: color,
+                  opacity,
+                  transform: `translate(-50%, -50%) scale(${scale})`,
+                  transition: 'opacity 0.2s ease-out, transform 0.2s ease-out',
+                }}
+              />
+            );
+          });
+        })}
 
         {/* Render multiplayers live cursors */}
         {Object.entries(cursors).map(([userId, data]) => {
