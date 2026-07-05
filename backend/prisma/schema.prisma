@@ -1,0 +1,39 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String    @id @default(uuid())
+  username     String
+  avatar       String    // Avatar ID or emoji
+  color        String    // hex or gradient code
+  score        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  tiles        Tile[]    @relation("UserTiles")
+  historyOld   History[] @relation("HistoryOldOwner")
+  historyNew   History[] @relation("HistoryNewOwner")
+}
+
+model Tile {
+  id           String    @id // format: "x,y"
+  ownerId      String?
+  owner        User?     @relation("UserTiles", fields: [ownerId], references: [id], onDelete: SetNull)
+  updatedAt    DateTime  @default(now()) @updatedAt
+  captureCount Int       @default(0)
+}
+
+model History {
+  id           String    @id @default(uuid())
+  tileId       String
+  oldOwnerId   String?
+  oldOwner     User?     @relation("HistoryOldOwner", fields: [oldOwnerId], references: [id], onDelete: SetNull)
+  newOwnerId   String
+  newOwner     User      @relation("HistoryNewOwner", fields: [newOwnerId], references: [id], onDelete: Cascade)
+  timestamp    DateTime  @default(now())
+}
