@@ -1,0 +1,19 @@
+{
+  "name": "nexus-grid-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=client\"",
+    "build": "npm run build --workspace=backend && npm run build --workspace=client",
+    "start": "concurrently \"npm run start --workspace=backend\" \"npm run start --workspace=client\"",
+    "docker:db": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "workspaces": [
+    "backend",
+    "client"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
