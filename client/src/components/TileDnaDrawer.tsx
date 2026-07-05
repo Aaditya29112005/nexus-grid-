@@ -68,6 +68,35 @@ export default function TileDnaDrawer() {
     }
   }
 
+  // AI Empire Lore Generator
+  const ownerName = tile.username || 'Unclaimed Lands';
+  let empireTitle = 'Terra Incognita';
+  let empireMotto = 'Seeking first settlers.';
+  let empireFlag = '🗺️';
+
+  if (tile.username) {
+    const mottos = [
+      'Through Concurrency, We Conquer.',
+      'Optimistic State, Sovereign Power.',
+      'Symmetric Cooldowns, Infinite Reach.',
+      'In Mutex We Trust.',
+      'Guaranteed Atomic Sovereignty.'
+    ];
+    const titles = [
+      `The Grand Duchy of ${ownerName}`,
+      `The Holy Empire of ${ownerName}`,
+      `United Clans of ${ownerName}`,
+      `Democratic Guild of ${ownerName}`,
+      `The Sovereign Kingdom of ${ownerName}`
+    ];
+    const flags = ['⚔️👑🛡️', '⚡🔮🌌', '💎⚙️🍂', '🕊️🎋🛡️', '🌠🦁✨'];
+
+    const seed = ownerName.charCodeAt(0) + (selectedTileId.charCodeAt(0) || 0);
+    empireTitle = titles[seed % titles.length];
+    empireMotto = mottos[seed % mottos.length];
+    empireFlag = flags[seed % flags.length];
+  }
+
   return (
     <motion.div
       initial={{ x: 300, opacity: 0 }}
@@ -140,6 +169,18 @@ export default function TileDnaDrawer() {
           <span className={`font-bold text-[11px] mt-0.5 ${stabilityColor}`}>
             {stability}% - {stabilityStatus}
           </span>
+        </div>
+      </div>
+
+      {/* AI Lore card */}
+      <div className="flex flex-col gap-1 bg-white/5 border border-white/5 p-2.5 rounded">
+        <span className="text-[9px] text-gray-500 uppercase font-semibold">AI Empire Lore & Flag</span>
+        <div className="flex items-center gap-2.5 mt-0.5">
+          <span className="text-lg">{empireFlag}</span>
+          <div className="flex-1 min-w-0">
+            <span className="block font-bold text-xs text-gray-200 truncate">{empireTitle}</span>
+            <span className="block text-[9px] text-gray-400 font-medium italic truncate">"{empireMotto}"</span>
+          </div>
         </div>
       </div>
 

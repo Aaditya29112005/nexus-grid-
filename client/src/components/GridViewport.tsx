@@ -206,6 +206,32 @@ export default function GridViewport() {
       setParticles((prev) => prev.filter((p) => !newParticles.includes(p)));
     }, 800);
 
+    // Play real-time synthesized audio tone
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        const audioCtx = new AudioContextClass();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        // Scale pitch based on geometric coordinates (x,y)
+        const frequencyVal = 180 + x * 4.5 + y * 4.5;
+        osc.frequency.setValueAtTime(frequencyVal, audioCtx.currentTime);
+        osc.type = 'triangle'; // sweet bell-like triangle wave
+
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.65);
+      }
+    } catch (err) {
+      console.warn('AudioContext synth initialization failed:', err);
+    }
+
     // Emit Socket capture event
     emitCapture(tileId);
   };

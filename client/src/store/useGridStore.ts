@@ -133,6 +133,12 @@ interface GridStore {
   setTimeOfDay: (time: 'morning' | 'noon' | 'evening' | 'night') => void;
   docModeActive: boolean;
   setDocModeActive: (active: boolean) => void;
+
+  // Phase 5 variables
+  isIntroActive: boolean;
+  setIntroActive: (active: boolean) => void;
+  isInterviewModeActive: boolean;
+  setInterviewModeActive: (active: boolean) => void;
 }
 
 const GRADIENT_POOL = [
@@ -382,4 +388,10 @@ export const useGridStore = create<GridStore>((set, get) => ({
   setTimeOfDay: (time) => set({ timeOfDay: time }),
   docModeActive: false,
   setDocModeActive: (active) => set({ docModeActive: active }),
+
+  // Phase 5 implementations
+  isIntroActive: true,
+  setIntroActive: (active) => set({ isIntroActive: active }),
+  isInterviewModeActive: false,
+  setInterviewModeActive: (active) => set({ isInterviewModeActive: active }),
 }));

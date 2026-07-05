@@ -12,12 +12,36 @@ import DevDashboard from '../components/DevDashboard';
 import Toaster from '../components/Toaster';
 import TileDnaDrawer from '../components/TileDnaDrawer';
 import NewsTicker from '../components/NewsTicker';
+import CinematicIntro from '../components/CinematicIntro';
+import RecruiterPanel from '../components/RecruiterPanel';
 import { Settings, RefreshCw } from 'lucide-react';
 
 export default function Home() {
-  const { user, setUser, setTiles, setHistory, setPresenceList, setLoading } = useGridStore();
+  const {
+    user,
+    setUser,
+    setTiles,
+    setHistory,
+    setPresenceList,
+    setLoading,
+    isIntroActive,
+    isInterviewModeActive,
+    setInterviewModeActive,
+  } = useGridStore();
   const [inGrid, setInGrid] = useState(false);
   const [showDevPanel, setShowDevPanel] = useState(false);
+
+  // Hotkey listener for Ctrl+Shift+G toggling Dev panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'g') {
+        e.preventDefault();
+        setShowDevPanel((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Try parsing user session from localStorage on load
   useEffect(() => {
@@ -82,6 +106,14 @@ export default function Home() {
 
   return (
     <div className="relative w-screen h-screen bg-[#03000a] flex flex-col overflow-hidden select-none">
+      {/* WebGL/Canvas Starfield Globe Intro */}
+      {isIntroActive && <CinematicIntro />}
+
+      {/* Recruiter system architecture walkthrough */}
+      <AnimatePresence>
+        {isInterviewModeActive && <RecruiterPanel />}
+      </AnimatePresence>
+
       {/* Dynamic particles toaster */}
       <Toaster />
 
@@ -118,9 +150,18 @@ export default function Home() {
               className={`p-2 rounded-lg glass-panel hover:border-pink-500/50 cursor-pointer transition-all ${
                 showDevPanel ? 'text-pink-400 border-pink-500/50' : 'text-gray-400'
               }`}
-              title="Dev Settings Panel"
+              title="Dev Settings Panel (Ctrl+Shift+G)"
             >
               <Settings size={16} />
+            </button>
+            <button
+              onClick={() => setInterviewModeActive(true)}
+              className={`p-2 rounded-lg glass-panel hover:border-cyan-500/50 cursor-pointer text-gray-400 hover:text-cyan-400 transition-all text-xs font-bold ${
+                isInterviewModeActive ? 'text-cyan-400 border-cyan-500/50' : ''
+              }`}
+              title="Recruiter Interview Walkthrough Mode"
+            >
+              💼 Recruiter Mode
             </button>
             <button
               onClick={handleLogout}
