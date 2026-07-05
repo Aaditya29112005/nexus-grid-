@@ -447,6 +447,7 @@ export default function GridViewport() {
       style={{
         backgroundPosition: `${panX}px ${panY}px`,
         perspective: currentUniverse === 'gamma' ? '1200px' : 'none',
+      }}
     >
       {/* Gravity particles background canvas */}
       <canvas ref={backgroundCanvasRef} className="absolute inset-0 block pointer-events-none z-0" />
