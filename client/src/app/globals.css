@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+:root {
+  --background: #03000a;
+  --foreground: #f3f0fa;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+/* Custom Grid background style */
+.bg-grid-cyber {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(123, 44, 191, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(123, 44, 191, 0.05) 1px, transparent 1px);
+}
+
+.bg-radial-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(123, 44, 191, 0.15) 0%, transparent 60%);
+}
+
+/* Scrollbar customizations */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 10, 20, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(123, 44, 191, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 44, 191, 0.6);
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: rgba(10, 8, 20, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(123, 44, 191, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(123, 44, 191, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Grid borders control */
+.tile-cooldown-overlay {
+  animation: pulse-cooldown 1s infinite alternate;
+}
+
+@keyframes pulse-cooldown {
+  0% {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0.09);
+  }
+}
+
+/* Hover glow borders */
+.tile-hover-glow {
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.5);
+  border-color: rgba(244, 63, 94, 0.8) !important;
+  z-index: 10;
+}
+
+/* Combo badge trigger scale */
+.combo-pop {
+  animation: pop-scale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pop-scale {
+  0% {
+    transform: scale(0.5) rotate(-5deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+/* Floating cursors labels smooth movement */
+.cursor-interpolate {
+  transition: transform 0.08s linear;
+}
+
+/* Keyframe animations */
+@keyframes grid-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(123, 44, 191, 0.2), inset 0 0 5px rgba(123, 44, 191, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(123, 44, 191, 0.4), inset 0 0 8px rgba(123, 44, 191, 0.2);
+  }
+}
+
+.glow-active {
+  animation: grid-glow 2s infinite alternate;
+}
