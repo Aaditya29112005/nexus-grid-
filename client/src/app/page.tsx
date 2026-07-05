@@ -14,6 +14,7 @@ import TileDnaDrawer from '../components/TileDnaDrawer';
 import NewsTicker from '../components/NewsTicker';
 import CinematicIntro from '../components/CinematicIntro';
 import RecruiterPanel from '../components/RecruiterPanel';
+import { AnimatePresence } from 'framer-motion';
 import { Settings, RefreshCw } from 'lucide-react';
 
 export default function Home() {
