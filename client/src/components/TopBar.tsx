@@ -15,6 +15,10 @@ export default function TopBar() {
     setHeatmapMode,
     weather,
     setWeather,
+    currentUniverse,
+    setUniverse,
+    timeOfDay,
+    setTimeOfDay,
   } = useGridStore();
 
   const [fps, setFps] = useState(60);
@@ -133,6 +137,31 @@ export default function TopBar() {
             <option value="rain">🌧️ Cyber Rain</option>
             <option value="snow">❄️ Neon Snow</option>
             <option value="glitch">⛈️ Solar Storm</option>
+          </select>
+
+          {/* Universe Selector */}
+          <select
+            value={currentUniverse}
+            onChange={(e) => setUniverse(e.target.value as any)}
+            className="bg-[#0b0814]/80 border border-white/10 text-gray-300 px-2 py-1.5 rounded-lg text-xs font-bold focus:outline-none cursor-pointer hover:bg-white/5 hover:border-pink-500/30 transition-all font-mono"
+            title="Switch Parallel Universes"
+          >
+            <option value="alpha">🌌 Univ Alpha</option>
+            <option value="beta">🔮 Univ Beta</option>
+            <option value="gamma">🌀 Univ Gamma</option>
+          </select>
+
+          {/* Day / Night cycle */}
+          <select
+            value={timeOfDay}
+            onChange={(e) => setTimeOfDay(e.target.value as any)}
+            className="bg-[#0b0814]/80 border border-white/10 text-gray-300 px-2 py-1.5 rounded-lg text-xs font-bold focus:outline-none cursor-pointer hover:bg-white/5 hover:border-pink-500/30 transition-all"
+            title="Set Cycle Time"
+          >
+            <option value="morning">🌅 Morning</option>
+            <option value="noon">☀️ Noon</option>
+            <option value="evening">🌇 Evening</option>
+            <option value="night">🌃 Night</option>
           </select>
         </div>
 

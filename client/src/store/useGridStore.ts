@@ -121,6 +121,18 @@ interface GridStore {
   setServerEvent: (evt: 'clear' | 'earthquake' | 'eclipse' | 'blackhole') => void;
   lastSuccessTimestamp: number;
   triggerSuccessPulse: () => void;
+
+  // Phase 4 variables
+  currentUniverse: 'alpha' | 'beta' | 'gamma';
+  setUniverse: (univ: 'alpha' | 'beta' | 'gamma') => void;
+  subGridTileId: string | null;
+  setSubGridTileId: (id: string | null) => void;
+  subGridTiles: Record<string, string>;
+  updateSubGridTile: (subId: string, color: string) => void;
+  timeOfDay: 'morning' | 'noon' | 'evening' | 'night';
+  setTimeOfDay: (time: 'morning' | 'noon' | 'evening' | 'night') => void;
+  docModeActive: boolean;
+  setDocModeActive: (active: boolean) => void;
 }
 
 const GRADIENT_POOL = [
@@ -356,4 +368,18 @@ export const useGridStore = create<GridStore>((set, get) => ({
   setServerEvent: (evt) => set({ serverEvent: evt }),
   lastSuccessTimestamp: 0,
   triggerSuccessPulse: () => set({ lastSuccessTimestamp: Date.now() }),
+
+  // Phase 4 implementations
+  currentUniverse: 'alpha',
+  setUniverse: (univ) => set({ currentUniverse: univ }),
+  subGridTileId: null,
+  setSubGridTileId: (id) => set({ subGridTileId: id }),
+  subGridTiles: {},
+  updateSubGridTile: (subId, color) => set((state) => ({
+    subGridTiles: { ...state.subGridTiles, [subId]: color },
+  })),
+  timeOfDay: 'noon',
+  setTimeOfDay: (time) => set({ timeOfDay: time }),
+  docModeActive: false,
+  setDocModeActive: (active) => set({ docModeActive: active }),
 }));

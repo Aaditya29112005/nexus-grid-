@@ -6,7 +6,7 @@ import { Compass, ShieldAlert, Star, Flame, History, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function TileDnaDrawer() {
-  const { selectedTileId, setSelectedTileId, tiles, history } = useGridStore();
+  const { selectedTileId, setSelectedTileId, tiles, history, setSubGridTileId } = useGridStore();
 
   if (!selectedTileId) return null;
 
@@ -158,6 +158,14 @@ export default function TileDnaDrawer() {
           />
         </div>
       </div>
+
+      {/* Fractal Zoom Button */}
+      <button
+        onClick={() => setSubGridTileId(selectedTileId)}
+        className="w-full bg-cyan-600/90 hover:bg-cyan-500 hover:scale-[1.02] hover:shadow-[0_0_12px_rgba(6,182,212,0.4)] text-white text-[10px] font-black uppercase tracking-wider py-2 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-all border border-cyan-500/20"
+      >
+        🔍 Zoom Fractal Sub-Grid
+      </button>
 
       {/* Dig Archaeology timeline tree */}
       <div className="flex-1 flex flex-col gap-2">

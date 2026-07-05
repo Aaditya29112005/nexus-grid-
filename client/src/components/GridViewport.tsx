@@ -5,6 +5,7 @@ import { useGridStore, GridTile } from '../store/useGridStore';
 import { useSocket } from '../hooks/useSocket';
 import { motion, AnimatePresence } from 'framer-motion';
 import WeatherEngine from './WeatherEngine';
+import FractalZoomSubGrid from './FractalZoomSubGrid';
 
 const TILE_SIZE = 40; // Size of each tile in px
 const GRID_SIZE = 100; // 100 x 100 grid
@@ -34,6 +35,9 @@ export default function GridViewport() {
     clashingTiles,
     setSelectedTileId,
     serverEvent,
+    currentUniverse,
+    timeOfDay,
+    subGridTileId,
   } = useGridStore();
 
   const { emitCursorMove, emitCapture } = useSocket();
@@ -246,6 +250,17 @@ export default function GridViewport() {
 
   const visibleTiles = getVisibleTiles();
 
+  let timeFilterClass = '';
+  if (timeOfDay === 'morning') timeFilterClass = 'brightness-90 sepia-[15%] saturate-[110%]';
+  else if (timeOfDay === 'evening') timeFilterClass = 'brightness-[72%] saturate-[130%] sepia-[10%] hue-rotate-[330deg]';
+  else if (timeOfDay === 'night') timeFilterClass = 'brightness-[42%] saturate-[70%] hue-rotate-[245deg]';
+
+  // Board transforms
+  let boardTransform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  if (currentUniverse === 'gamma') {
+    boardTransform += ' rotateX(10deg) rotateY(-5deg)';
+  }
+
   return (
     <div
       ref={containerRef}
@@ -254,10 +269,13 @@ export default function GridViewport() {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      className={`relative w-full h-full bg-grid-cyber select-none cursor-crosshair overflow-hidden ${
-        serverEvent === 'eclipse' ? 'brightness-50 saturate-150 transition-all duration-1000' : ''
+      className={`relative w-full h-full bg-grid-cyber select-none cursor-crosshair overflow-hidden transition-all duration-1000 ${
+        serverEvent === 'eclipse' ? 'brightness-50 saturate-150' : timeFilterClass
       }`}
-      style={{ backgroundPosition: `${panX}px ${panY}px` }}
+      style={{
+        backgroundPosition: `${panX}px ${panY}px`,
+        perspective: currentUniverse === 'gamma' ? '1200px' : 'none',
+      }}
     >
       {/* Weather canvas particles */}
       <WeatherEngine />
@@ -278,12 +296,13 @@ export default function GridViewport() {
         ref={boardRef}
         className={serverEvent === 'earthquake' ? 'tile-clash-shake' : ''}
         style={{
-          transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+          transform: boardTransform,
           transformOrigin: '0 0',
           width: GRID_SIZE * TILE_SIZE,
           height: GRID_SIZE * TILE_SIZE,
           position: 'absolute',
-        }}
+          style: currentUniverse === 'gamma' ? { transformStyle: 'preserve-3d' } : undefined,
+        } as any}
       >
         {/* Black Hole cosmic visual at center of grid */}
         {serverEvent === 'blackhole' && (
@@ -329,13 +348,15 @@ export default function GridViewport() {
             }
           }
 
+          const isDistortionZone = (x % 6 === 0 && y % 6 === 0);
+
           return (
             <div
               key={tileId}
               onClick={(e) => handleTileClick(x, y, e)}
               className={`grid-tile absolute border border-[rgba(255,255,255,0.03)] flex items-center justify-center transition-all duration-300 hover:border-pink-500 hover:scale-105 hover:z-10 hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] ${
                 isClashing ? 'tile-clash-shake' : ''
-              }`}
+              } ${currentUniverse === 'beta' ? 'hue-rotate-[120deg] saturate-150' : ''}`}
               style={{
                 left: x * TILE_SIZE,
                 top: y * TILE_SIZE,
@@ -345,6 +366,10 @@ export default function GridViewport() {
                 cursor: isCooldown || isReplayActive ? 'not-allowed' : 'pointer',
               }}
             >
+              {/* Reality Distortion Zone overlay */}
+              {isDistortionZone && (
+                <div className="absolute inset-0 border border-dashed border-pink-500/60 pointer-events-none animate-pulse z-10" />
+              )}
               {/* Clash clash indicator overlay */}
               {isClashing && (
                 <div className="absolute inset-0 bg-red-600/30 flex items-center justify-center text-xs font-black z-20 animate-ping">
@@ -459,6 +484,11 @@ export default function GridViewport() {
             style={{ background: p.color }}
           />
         ))}
+      </AnimatePresence>
+
+      {/* Nested Fractal Zoom Universe Modal */}
+      <AnimatePresence>
+        {subGridTileId && <FractalZoomSubGrid />}
       </AnimatePresence>
 
       {/* Floating coordinates indicator in bottom bar */}
