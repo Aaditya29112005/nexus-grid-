@@ -55,6 +55,93 @@ export default function GridViewport() {
   // Cursor Trails state for multiplayer glowing tails
   const [cursorTrails, setCursorTrails] = useState<Record<string, Array<{ x: number; y: number; id: string }>>>({});
 
+  // Background gravity flow particles ref
+  const backgroundCanvasRef = useRef<HTMLCanvasElement>(null);
+  const mousePosRef = useRef({ x: 0, y: 0 });
+
+  // Gravitational particle animation loop
+  useEffect(() => {
+    const canvas = backgroundCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+    let animId: number;
+
+    interface FlowParticle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      color: string;
+    }
+
+    const flowParticles: FlowParticle[] = Array.from({ length: 90 }).map(() => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      size: Math.random() * 2 + 0.8,
+      color: Math.random() > 0.6 ? 'rgba(0, 240, 255, 0.25)' : 'rgba(139, 92, 246, 0.2)',
+    }));
+
+    const renderLoop = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      const targetX = mousePosRef.current.x;
+      const targetY = mousePosRef.current.y;
+
+      for (const p of flowParticles) {
+        // Apply magnetic gravity vector towards mouse if close
+        const dx = targetX - p.x;
+        const dy = targetY - p.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < 220) {
+          const force = (220 - dist) * 0.00035;
+          p.vx += dx * force;
+          p.vy += dy * force;
+        }
+
+        // Apply friction
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Wrap around boundaries
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      animId = requestAnimationFrame(renderLoop);
+    };
+
+    renderLoop();
+
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   useEffect(() => {
     setCursorTrails((prev) => {
       const nextTrails = { ...prev };
@@ -156,11 +243,13 @@ export default function GridViewport() {
       return;
     }
 
-    // Capture cursor move in local grid coordinates
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
+
+    // Track for background canvas gravity pull
+    mousePosRef.current = { x: mouseX, y: mouseY };
     
     // Convert to grid-scaled coordinates for broadcasting
     const gridX = (mouseX - panX) / zoom;
@@ -274,6 +363,63 @@ export default function GridViewport() {
     return borders;
   };
 
+  // Render neural connection lines between adjacent owned cells
+  const renderNeuralNetwork = () => {
+    const lines: React.ReactNode[] = [];
+    visibleTiles.forEach(({ x, y }) => {
+      const currentId = `${x},${y}`;
+      const currentTile = activeTilesSource[currentId];
+      if (!currentTile || !currentTile.color) return;
+
+      // Check right neighbor (x+1, y)
+      const rightId = `${x+1},${y}`;
+      const rightTile = activeTilesSource[rightId];
+      if (rightTile && rightTile.color === currentTile.color) {
+        lines.push(
+          <div
+            key={`neuron-h-${x}-${y}`}
+            style={{
+              position: 'absolute',
+              left: x * TILE_SIZE + TILE_SIZE / 2,
+              top: y * TILE_SIZE + TILE_SIZE / 2 - 1,
+              width: TILE_SIZE,
+              height: 2,
+              background: currentTile.color,
+              boxShadow: `0 0 8px ${currentTile.color}`,
+              opacity: 0.6,
+              pointerEvents: 'none',
+              zIndex: 3,
+            }}
+          />
+        );
+      }
+
+      // Check bottom neighbor (x, y+1)
+      const bottomId = `${x},${y+1}`;
+      const bottomTile = activeTilesSource[bottomId];
+      if (bottomTile && bottomTile.color === currentTile.color) {
+        lines.push(
+          <div
+            key={`neuron-v-${x}-${y}`}
+            style={{
+              position: 'absolute',
+              left: x * TILE_SIZE + TILE_SIZE / 2 - 1,
+              top: y * TILE_SIZE + TILE_SIZE / 2,
+              width: 2,
+              height: TILE_SIZE,
+              background: currentTile.color,
+              boxShadow: `0 0 8px ${currentTile.color}`,
+              opacity: 0.6,
+              pointerEvents: 'none',
+              zIndex: 3,
+            }}
+          />
+        );
+      }
+    });
+    return lines;
+  };
+
   const visibleTiles = getVisibleTiles();
 
   let timeFilterClass = '';
@@ -301,8 +447,10 @@ export default function GridViewport() {
       style={{
         backgroundPosition: `${panX}px ${panY}px`,
         perspective: currentUniverse === 'gamma' ? '1200px' : 'none',
-      }}
     >
+      {/* Gravity particles background canvas */}
+      <canvas ref={backgroundCanvasRef} className="absolute inset-0 block pointer-events-none z-0" />
+
       {/* Weather canvas particles */}
       <WeatherEngine />
 
@@ -345,6 +493,9 @@ export default function GridViewport() {
             }}
           />
         )}
+        {/* Neural Network connectors */}
+        {renderNeuralNetwork()}
+
         {/* Render visible virtualized tiles */}
         {visibleTiles.map(({ x, y }) => {
           const tileId = `${x},${y}`;

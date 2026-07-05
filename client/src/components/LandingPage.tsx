@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGridStore, generateGuestProfile, PlayerProfile } from '../store/useGridStore';
-import { RotateCw, Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { RotateCw, Sparkles, Terminal, Globe, Shield } from 'lucide-react';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 
 interface LandingPageProps {
   onEnter: () => void;
@@ -13,11 +13,38 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
   const { setUser } = useGridStore();
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [customName, setCustomName] = useState('');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [liveStats, setLiveStats] = useState({
     activeUsers: 143,
     totalCaptures: 21984,
   });
+
+  // Coordinates for magnetic hover button
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    // Limit pull strength
+    const dist = Math.sqrt(x*x + y*y);
+    if (dist < 80) {
+      mouseX.set(x * 0.45);
+      mouseY.set(y * 0.45);
+    } else {
+      mouseX.set(0);
+      mouseY.set(0);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   // Fetch initial stats and generate profile on mount
   useEffect(() => {
@@ -40,6 +67,83 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
     fetchLiveStats();
   }, []);
 
+  // Background particle nebula generator
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+    let animationId: number;
+
+    interface Particle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+      color: string;
+    }
+
+    const particles: Particle[] = Array.from({ length: 65 }).map(() => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      radius: Math.random() * 2 + 1,
+      color: Math.random() > 0.5 ? 'rgba(0, 240, 255, 0.4)' : 'rgba(139, 92, 246, 0.4)',
+    }));
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Connect adjacent nodes
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i];
+        p1.x += p1.vx;
+        p1.y += p1.vy;
+
+        if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+        if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+        ctx.fillStyle = p1.color;
+        ctx.beginPath();
+        ctx.arc(p1.x, p1.y, p1.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+          if (dist < 110) {
+            ctx.strokeStyle = `rgba(0, 240, 255, ${0.15 * (1 - dist / 110)})`;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      animationId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const handleReroll = () => {
     const nextProfile = generateGuestProfile();
     setProfile(nextProfile);
@@ -48,30 +152,22 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
 
   const handleEnterGrid = () => {
     if (!profile) return;
-    
-    // Update profile username if they edited it
     const finalUsername = customName.trim() ? customName.trim() : profile.username;
     const finalProfile = { ...profile, username: finalUsername };
-    
-    // Write session to Zustand and persist locally
     setUser(finalProfile);
     localStorage.setItem('nexus_grid_user', JSON.stringify(finalProfile));
-    
     onEnter();
   };
 
   const handleGoogleLogin = () => {
     if (!profile) return;
-    
-    // Simulated Google login: uses Google email handle and google avatar style
     const googleProfile: PlayerProfile = {
       id: `google-${Math.random().toString(36).substring(2, 11)}`,
       username: 'Google_Dev@gmail.com',
       avatar: '👑',
-      color: 'linear-gradient(135deg, #FF4B2B, #FF416C)', // Google colors gradient
+      color: 'linear-gradient(135deg, #FF4B2B, #FF416C)',
       score: 0,
     };
-
     setUser(googleProfile);
     localStorage.setItem('nexus_grid_user', JSON.stringify(googleProfile));
     onEnter();
@@ -80,46 +176,50 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
   if (!profile) return null;
 
   return (
-    <div className="relative w-screen h-screen bg-[#03000a] flex flex-col items-center justify-center bg-grid-cyber overflow-hidden">
-      {/* Background Radial Glow */}
+    <div className="relative w-screen h-screen bg-[#020008] flex flex-col items-center justify-center bg-grid-cyber overflow-hidden select-none">
+      <canvas ref={canvasRef} className="absolute inset-0 block pointer-events-none" />
       <div className="absolute inset-0 bg-radial-glow pointer-events-none" />
 
-      {/* Floating Animated Sparks */}
-      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-purple-500/10 blur-[120px] rounded-full pointer-events-none animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-pink-500/10 blur-[120px] rounded-full pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }} />
-
-      {/* Title Header */}
+      {/* GridVerse OS Header with particle assembled feel */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         className="text-center z-10 mb-8"
       >
-        <h1 className="text-6xl font-black tracking-[0.25em] bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-2xl">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#00f0ff]/20 bg-[#00f0ff]/5 mb-4 text-[9px] font-bold text-cyan-400 uppercase tracking-widest font-mono">
+          <Terminal size={10} className="animate-pulse" /> GridVerse OS v4.1.0
+        </div>
+        <h1 className="text-6xl font-black tracking-[0.25em] bg-gradient-to-r from-cyan-400 via-white to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,240,255,0.2)]">
           NEXUS GRID
         </h1>
-        <p className="text-gray-400 text-sm tracking-[0.3em] uppercase mt-3 font-semibold">
-          Capture. Control. Dominate.
+        <p className="text-gray-400 text-xs tracking-[0.4em] uppercase mt-3 font-semibold font-mono">
+          MULTIPLAYER STATE ENGINE
         </p>
       </motion.div>
 
-      {/* Login Dashboard Panel */}
+      {/* Holographic Launcher Console */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="glass-panel w-96 p-8 rounded-2xl flex flex-col gap-6 shadow-[0_12px_40px_rgba(0,0,0,0.6)] z-10"
+        className="glass-panel w-96 p-8 rounded-2xl flex flex-col gap-6 shadow-[0_12px_45px_rgba(0,0,0,0.85)] z-10 relative overflow-hidden border border-cyan-500/10"
       >
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse" />
+
         {/* Animated Avatar Visual Card */}
         <div className="flex flex-col items-center gap-3">
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl border border-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.4)] animate-bounce"
+          <motion.div
+            animate={{ rotateY: 360 }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+            className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl border border-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.5)] cursor-pointer"
             style={{ background: profile.color }}
+            onClick={handleReroll}
           >
             {profile.avatar}
-          </div>
-          <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-            Your Pilot Profile
+          </motion.div>
+          <span className="text-[9px] text-cyan-400/80 uppercase tracking-widest font-bold font-mono flex items-center gap-1">
+            <Globe size={10} /> Active Profile Slot
           </span>
         </div>
 
@@ -131,55 +231,42 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
               placeholder={profile.username}
               value={customName}
               onChange={(e) => setCustomName(e.target.value)}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-pink-500/50 focus:bg-white/10 transition-all font-semibold"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-cyan-500/50 focus:bg-white/10 transition-all font-semibold font-mono"
             />
             <button
               onClick={handleReroll}
-              className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-pink-500/30 cursor-pointer transition-all"
+              className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-cyan-400 hover:text-white hover:bg-white/10 hover:border-cyan-500/30 cursor-pointer transition-all"
               title="Re-roll username"
             >
-              <RotateCw size={18} />
+              <RotateCw size={16} />
             </button>
           </div>
 
-          {/* CTA: Enter Grid */}
-          <button
+          {/* Magnetic CTA Enter Grid */}
+          <motion.button
+            ref={buttonRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{ x: mouseX, y: mouseY }}
             onClick={handleEnterGrid}
-            className="w-full py-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold text-sm tracking-widest uppercase cursor-pointer shadow-[0_4px_20px_rgba(236,72,153,0.3)] hover:shadow-[0_4px_25px_rgba(236,72,153,0.5)] transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-white font-bold text-xs tracking-widest uppercase cursor-pointer shadow-[0_0_20px_rgba(0,240,255,0.25)] hover:shadow-[0_0_30px_rgba(0,240,255,0.45)] transition-all flex items-center justify-center gap-2 font-mono"
           >
-            <Sparkles size={16} /> Enter Grid
-          </button>
+            <Sparkles size={14} /> Initialize Pilot
+          </motion.button>
 
           {/* Google Login Trigger */}
-          <div className="relative flex py-2 items-center">
+          <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-white/5"></div>
-            <span className="flex-shrink mx-4 text-[9px] text-gray-500 uppercase tracking-wider font-semibold">Or Connect</span>
+            <span className="flex-shrink mx-4 text-[8px] text-gray-500 uppercase tracking-wider font-semibold font-mono">Telemetry link</span>
             <div className="flex-grow border-t border-white/5"></div>
           </div>
 
           <button
             onClick={handleGoogleLogin}
-            className="w-full py-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs font-bold hover:bg-white/10 hover:border-pink-500/30 cursor-pointer transition-all flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-[10px] font-bold hover:bg-white/10 hover:border-cyan-500/30 cursor-pointer transition-all flex items-center justify-center gap-2 font-mono"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
-              <path
-                fill="currentColor"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="currentColor"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-              />
-            </svg>
-            Sign in with Google
+            <Shield size={12} className="text-cyan-400" />
+            Connect Dev Telemetry
           </button>
         </div>
       </motion.div>
@@ -189,22 +276,22 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="flex gap-12 mt-8 z-10"
+        className="flex gap-16 mt-10 z-10 font-mono"
       >
         <div className="text-center">
-          <span className="block text-2xl font-black text-pink-400 font-mono tracking-wide">
+          <span className="block text-2xl font-black text-cyan-400 tracking-wider">
             {liveStats.activeUsers}
           </span>
-          <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-            Live Users
+          <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">
+            Live Connections
           </span>
         </div>
         <div className="text-center">
-          <span className="block text-2xl font-black text-cyan-400 font-mono tracking-wide">
+          <span className="block text-2xl font-black text-violet-400 tracking-wider">
             {liveStats.totalCaptures.toLocaleString()}
           </span>
-          <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-            Blocks Captured
+          <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">
+            Sovereign Claims
           </span>
         </div>
       </motion.div>
