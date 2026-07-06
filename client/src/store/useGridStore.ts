@@ -140,6 +140,10 @@ interface GridStore {
   setIntroActive: (active: boolean) => void;
   isInterviewModeActive: boolean;
   setInterviewModeActive: (active: boolean) => void;
+  leftSidebarOpen: boolean;
+  setLeftSidebarOpen: (open: boolean) => void;
+  rightSidebarOpen: boolean;
+  setRightSidebarOpen: (open: boolean) => void;
 }
 
 const GRADIENT_POOL = [
@@ -395,4 +399,8 @@ export const useGridStore = create<GridStore>((set, get) => ({
   setIntroActive: (active) => set({ isIntroActive: active }),
   isInterviewModeActive: false,
   setInterviewModeActive: (active) => set({ isInterviewModeActive: active }),
+  leftSidebarOpen: true,
+  setLeftSidebarOpen: (open) => set({ leftSidebarOpen: open }),
+  rightSidebarOpen: true,
+  setRightSidebarOpen: (open) => set({ rightSidebarOpen: open }),
 }));
