@@ -3,16 +3,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGridStore, generateGuestProfile, PlayerProfile } from '../store/useGridStore';
 import { RotateCw, Sparkles, Terminal, Globe, Shield } from 'lucide-react';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useMotionValue } from 'framer-motion';
 
 interface LandingPageProps {
   onEnter: () => void;
 }
 
+// Decode JWT token helper to extract user picture & details without packages
+const decodeJwt = (token: string) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+};
+
 export default function LandingPage({ onEnter }: LandingPageProps) {
   const { setUser } = useGridStore();
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [customName, setCustomName] = useState('');
+  const [googleLoaded, setGoogleLoaded] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [liveStats, setLiveStats] = useState({
@@ -20,7 +38,6 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
     totalCaptures: 21984,
   });
 
-  // Coordinates for magnetic hover button
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -30,7 +47,6 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
     const rect = buttonRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left - rect.width / 2;
     const y = e.clientY - rect.top - rect.height / 2;
-    // Limit pull strength
     const dist = Math.sqrt(x*x + y*y);
     if (dist < 80) {
       mouseX.set(x * 0.45);
@@ -46,7 +62,65 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
     mouseY.set(0);
   };
 
-  // Fetch initial stats and generate profile on mount
+  // Google credential receiver callback
+  useEffect(() => {
+    (window as any).handleGoogleCredential = (response: any) => {
+      try {
+        const token = response.credential;
+        const decoded = decodeJwt(token);
+        if (decoded) {
+          const googleProfile: PlayerProfile = {
+            id: `google-${decoded.sub}`,
+            username: decoded.name || decoded.email.split('@')[0],
+            avatar: '👤',
+            color: 'linear-gradient(135deg, #00f0ff, #8b5cf6)',
+            score: 0,
+            picture: decoded.picture, // Actual Google profile photo!
+          };
+          setUser(googleProfile);
+          localStorage.setItem('nexus_grid_user', JSON.stringify(googleProfile));
+          onEnter();
+        }
+      } catch (err) {
+        console.error('Google ID JWT decode failed:', err);
+      }
+    };
+  }, [onEnter, setUser]);
+
+  // Load Google Identity Services script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setGoogleLoaded(true);
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  // Initialize and Render the Google Button
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const google = (window as any).google;
+      if (google?.accounts?.id) {
+        google.accounts.id.initialize({
+          client_id: '874241774358-placeholderclientid.apps.googleusercontent.com', // standard dev testing client id
+          callback: (window as any).handleGoogleCredential,
+        });
+        google.accounts.id.renderButton(
+          document.getElementById('google-signin-button'),
+          { theme: 'outline', size: 'large', width: 320, text: 'signin_with' }
+        );
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [googleLoaded, profile]);
+
+  // Fetch stats and profile on mount
   useEffect(() => {
     setProfile(generateGuestProfile());
 
@@ -67,7 +141,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
     fetchLiveStats();
   }, []);
 
-  // Background particle nebula generator
+  // Background particles animation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -99,7 +173,6 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Connect adjacent nodes
       ctx.lineWidth = 0.5;
       for (let i = 0; i < particles.length; i++) {
         const p1 = particles[i];
@@ -167,6 +240,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
       avatar: '👑',
       color: 'linear-gradient(135deg, #FF4B2B, #FF416C)',
       score: 0,
+      picture: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80', // mockup premium avatar URL
     };
     setUser(googleProfile);
     localStorage.setItem('nexus_grid_user', JSON.stringify(googleProfile));
@@ -180,7 +254,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
       <canvas ref={canvasRef} className="absolute inset-0 block pointer-events-none" />
       <div className="absolute inset-0 bg-radial-glow pointer-events-none" />
 
-      {/* GridVerse OS Header with particle assembled feel */}
+      {/* GridVerse OS Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -224,7 +298,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
         </div>
 
         {/* Input Details */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 text-center">
           <div className="flex gap-2">
             <input
               type="text"
@@ -257,17 +331,25 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
           {/* Google Login Trigger */}
           <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-white/5"></div>
-            <span className="flex-shrink mx-4 text-[8px] text-gray-500 uppercase tracking-wider font-semibold font-mono">Telemetry link</span>
+            <span className="flex-shrink mx-4 text-[8px] text-gray-500 uppercase tracking-wider font-semibold font-mono">Google Credentials</span>
             <div className="flex-grow border-t border-white/5"></div>
           </div>
 
-          <button
-            onClick={handleGoogleLogin}
-            className="w-full py-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-[10px] font-bold hover:bg-white/10 hover:border-cyan-500/30 cursor-pointer transition-all flex items-center justify-center gap-2 font-mono"
-          >
-            <Shield size={12} className="text-cyan-400" />
-            Connect Dev Telemetry
-          </button>
+          {/* Standard Google login button wrapper */}
+          <div className="flex justify-center overflow-hidden rounded-lg bg-white/5 border border-white/10 hover:border-cyan-500/30 transition-all p-0.5">
+            <div id="google-signin-button" className="w-full flex justify-center text-xs" />
+          </div>
+
+          {/* Fallback check in case google client script fails/blocked */}
+          {!googleLoaded && (
+            <button
+              onClick={handleGoogleLogin}
+              className="w-full py-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-[10px] font-bold hover:bg-white/10 hover:border-cyan-500/30 cursor-pointer transition-all flex items-center justify-center gap-2 font-mono"
+            >
+              <Shield size={12} className="text-cyan-400" />
+              Simulate Google Credentials
+            </button>
+          )}
         </div>
       </motion.div>
 

@@ -176,12 +176,21 @@ export default function TopBar() {
                 {user.score} pts
               </span>
             </div>
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg border border-white/10 shadow"
-              style={{ background: user.color }}
-            >
-              {user.avatar}
-            </div>
+            {user.picture ? (
+              <img
+                src={user.picture}
+                alt={user.username}
+                className="w-9 h-9 rounded-xl object-cover border border-white/10 shadow"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-lg border border-white/10 shadow"
+                style={{ background: user.color }}
+              >
+                {user.avatar}
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -44,12 +44,21 @@ export function LeftSidebar() {
                   {medal ? medal : rank}
                 </div>
                 {/* Avatar with player's color gradient */}
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-base border border-white/10 shadow"
-                  style={{ background: player.color }}
-                >
-                  {player.avatar}
-                </div>
+                {player.picture ? (
+                  <img
+                    src={player.picture}
+                    alt={player.username}
+                    className="w-8 h-8 rounded-full object-cover border border-white/10 shadow"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-base border border-white/10 shadow"
+                    style={{ background: player.color }}
+                  >
+                    {player.avatar}
+                  </div>
+                )}
                 <div className="flex flex-col">
                   <span className={`text-sm font-semibold truncate max-w-[100px] ${isMe ? 'text-pink-400' : 'text-gray-200'}`}>
                     {player.username}

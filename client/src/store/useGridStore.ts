@@ -16,6 +16,7 @@ export interface PlayerProfile {
   avatar: string;
   color: string;
   score: number;
+  picture?: string;
 }
 
 export interface CursorPosition {
