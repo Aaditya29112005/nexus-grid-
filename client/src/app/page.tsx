@@ -14,6 +14,7 @@ import TileDnaDrawer from '../components/TileDnaDrawer';
 import NewsTicker from '../components/NewsTicker';
 import CinematicIntro from '../components/CinematicIntro';
 import RecruiterPanel from '../components/RecruiterPanel';
+import HatomPreloader from '../components/HatomPreloader';
 import { AnimatePresence } from 'framer-motion';
 import { Settings, RefreshCw } from 'lucide-react';
 
@@ -31,6 +32,7 @@ export default function Home() {
   } = useGridStore();
   const [inGrid, setInGrid] = useState(false);
   const [showDevPanel, setShowDevPanel] = useState(false);
+  const [preloaderActive, setPreloaderActive] = useState(true);
 
   // Hotkey listener for Ctrl+Shift+G toggling Dev panel
   useEffect(() => {
@@ -107,8 +109,15 @@ export default function Home() {
 
   return (
     <div className="relative w-screen h-screen bg-[#03000a] flex flex-col overflow-hidden select-none">
+      {/* Hatom Preloader loading sequence overlay */}
+      <AnimatePresence>
+        {preloaderActive && (
+          <HatomPreloader onComplete={() => setPreloaderActive(false)} />
+        )}
+      </AnimatePresence>
+
       {/* WebGL/Canvas Starfield Globe Intro */}
-      {isIntroActive && <CinematicIntro />}
+      {isIntroActive && !preloaderActive && <CinematicIntro />}
 
       {/* Recruiter system architecture walkthrough */}
       <AnimatePresence>
