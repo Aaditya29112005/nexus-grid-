@@ -107,7 +107,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
       const google = (window as any).google;
       if (google?.accounts?.id) {
         google.accounts.id.initialize({
-          client_id: '874241774358-placeholderclientid.apps.googleusercontent.com', // standard dev testing client id
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
           callback: (window as any).handleGoogleCredential,
         });
         google.accounts.id.renderButton(
