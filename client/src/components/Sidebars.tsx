@@ -202,16 +202,10 @@ export function RightSidebar() {
                 </span>
               </div>
               <div className="text-gray-300">
-                <span
-                  className="font-bold mr-1"
-                  style={{
-                    color: event.color,
-                    textShadow: `0 0 5px ${event.color}50`,
-                  }}
-                >
-                  {event.username}
+                <span className="font-bold mr-1 text-cyan-400">
+                  {event.newOwnerName}
                 </span>
-                claimed territory.
+                captured territory.
               </div>
             </div>
           );
