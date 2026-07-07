@@ -250,7 +250,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
   if (!profile) return null;
 
   return (
-    <div className="relative w-screen h-screen bg-[#020008] flex flex-col items-center justify-center bg-grid-cyber overflow-hidden select-none">
+    <div className="relative w-screen h-screen bg-[#0C0B21] flex flex-col items-center justify-center bg-grid-cyber overflow-hidden select-none">
       <canvas ref={canvasRef} className="absolute inset-0 block pointer-events-none" />
       <div className="absolute inset-0 bg-radial-glow pointer-events-none" />
 
@@ -261,10 +261,10 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
         transition={{ duration: 0.8 }}
         className="text-center z-10 mb-8"
       >
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#00f0ff]/20 bg-[#00f0ff]/5 mb-4 text-[9px] font-bold text-cyan-400 uppercase tracking-widest font-mono">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#C1FF12]/20 bg-[#C1FF12]/5 mb-4 text-[9px] font-bold text-[#C1FF12] uppercase tracking-widest font-mono">
           <Terminal size={10} className="animate-pulse" /> GridVerse OS v4.1.0
         </div>
-        <h1 className="text-6xl font-black tracking-[0.25em] bg-gradient-to-r from-cyan-400 via-white to-violet-500 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+        <h1 className="text-6xl font-black tracking-[0.25em] bg-gradient-to-r from-[#7ECEFF] via-white to-[#8A5DFF] bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(118,206,255,0.2)]">
           NEXUS GRID
         </h1>
         <p className="text-gray-400 text-xs tracking-[0.4em] uppercase mt-3 font-semibold font-mono">
@@ -277,9 +277,9 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="glass-panel w-96 p-8 rounded-2xl flex flex-col gap-6 shadow-[0_12px_45px_rgba(0,0,0,0.85)] z-10 relative overflow-hidden border border-cyan-500/10"
+        className="glass-panel w-96 p-8 rounded-2xl flex flex-col gap-6 shadow-[0_12px_45px_rgba(0,0,0,0.85)] z-10 relative overflow-hidden border border-[#292651]"
       >
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#C1FF12] to-transparent animate-pulse" />
 
         {/* Animated Avatar Visual Card */}
         <div className="flex flex-col items-center gap-3">
@@ -292,7 +292,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
           >
             {profile.avatar}
           </motion.div>
-          <span className="text-[9px] text-cyan-400/80 uppercase tracking-widest font-bold font-mono flex items-center gap-1">
+          <span className="text-[9px] text-[#C1FF12]/80 uppercase tracking-widest font-bold font-mono flex items-center gap-1">
             <Globe size={10} /> Active Profile Slot
           </span>
         </div>
@@ -305,11 +305,11 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
               placeholder={profile.username}
               value={customName}
               onChange={(e) => setCustomName(e.target.value)}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-cyan-500/50 focus:bg-white/10 transition-all font-semibold font-mono"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-[#C1FF12]/50 focus:bg-white/10 transition-all font-semibold font-mono"
             />
             <button
               onClick={handleReroll}
-              className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-cyan-400 hover:text-white hover:bg-white/10 hover:border-cyan-500/30 cursor-pointer transition-all"
+              className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-[#C1FF12] hover:text-white hover:bg-[#171430] hover:border-[#C1FF12]/30 cursor-pointer transition-all"
               title="Re-roll username"
             >
               <RotateCw size={16} />
@@ -323,7 +323,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
             onMouseLeave={handleMouseLeave}
             style={{ x: mouseX, y: mouseY }}
             onClick={handleEnterGrid}
-            className="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-white font-bold text-xs tracking-widest uppercase cursor-pointer shadow-[0_0_20px_rgba(0,240,255,0.25)] hover:shadow-[0_0_30px_rgba(0,240,255,0.45)] transition-all flex items-center justify-center gap-2 font-mono"
+            className="w-full py-3 rounded-lg bg-gradient-to-r from-[#7ECEFF] to-[#8A5DFF] hover:from-[#50D5FF] hover:to-[#701BE7] text-white font-bold text-xs tracking-widest uppercase cursor-pointer shadow-[0_0_20px_rgba(118,206,255,0.25)] hover:shadow-[0_0_30px_rgba(118,206,255,0.45)] transition-all flex items-center justify-center gap-2 font-mono"
           >
             <Sparkles size={14} /> Initialize Pilot
           </motion.button>
@@ -336,7 +336,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
           </div>
 
           {/* Standard Google login button wrapper */}
-          <div className="flex justify-center overflow-hidden rounded-lg bg-white/5 border border-white/10 hover:border-cyan-500/30 transition-all p-0.5">
+          <div className="flex justify-center overflow-hidden rounded-lg bg-white/5 border border-white/10 hover:border-[#C1FF12]/30 transition-all p-0.5">
             <div id="google-signin-button" className="w-full flex justify-center text-xs" />
           </div>
 
@@ -344,9 +344,9 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
           {!googleLoaded && (
             <button
               onClick={handleGoogleLogin}
-              className="w-full py-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-[10px] font-bold hover:bg-white/10 hover:border-cyan-500/30 cursor-pointer transition-all flex items-center justify-center gap-2 font-mono"
+              className="w-full py-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-[10px] font-bold hover:bg-white/10 hover:border-[#C1FF12]/30 cursor-pointer transition-all flex items-center justify-center gap-2 font-mono"
             >
-              <Shield size={12} className="text-cyan-400" />
+              <Shield size={12} className="text-[#C1FF12]" />
               Simulate Google Credentials
             </button>
           )}

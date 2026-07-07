@@ -120,8 +120,8 @@ export default function TopBar() {
             onClick={() => setHeatmapMode(!isHeatmapMode)}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
               isHeatmapMode
-                ? 'bg-orange-600 border-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.4)]'
-                : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-pink-500/30'
+                ? 'bg-[#C1FF12] border-[#C1FF12] text-black shadow-[0_0_15px_rgba(193,255,18,0.4)]'
+                : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:border-[#C1FF12]/30'
             }`}
           >
             🔥 Heatmap View
@@ -131,7 +131,7 @@ export default function TopBar() {
           <select
             value={weather}
             onChange={(e) => setWeather(e.target.value as any)}
-            className="bg-[#0b0814]/80 border border-white/10 text-gray-300 px-2 py-1.5 rounded-lg text-xs font-bold focus:outline-none cursor-pointer hover:bg-white/5 hover:border-pink-500/30 transition-all"
+            className="bg-[#171430]/90 border border-white/10 text-gray-300 px-2 py-1.5 rounded-lg text-xs font-bold focus:outline-none cursor-pointer hover:bg-white/5 hover:border-[#C1FF12]/30 transition-all"
           >
             <option value="clear">☀️ Clear Sky</option>
             <option value="rain">🌧️ Cyber Rain</option>
@@ -143,7 +143,7 @@ export default function TopBar() {
           <select
             value={currentUniverse}
             onChange={(e) => setUniverse(e.target.value as any)}
-            className="bg-[#0b0814]/80 border border-white/10 text-gray-300 px-2 py-1.5 rounded-lg text-xs font-bold focus:outline-none cursor-pointer hover:bg-white/5 hover:border-pink-500/30 transition-all font-mono"
+            className="bg-[#171430]/90 border border-white/10 text-gray-300 px-2 py-1.5 rounded-lg text-xs font-bold focus:outline-none cursor-pointer hover:bg-white/5 hover:border-[#C1FF12]/30 transition-all font-mono"
             title="Switch Parallel Universes"
           >
             <option value="alpha">🌌 Univ Alpha</option>
@@ -155,7 +155,7 @@ export default function TopBar() {
           <select
             value={timeOfDay}
             onChange={(e) => setTimeOfDay(e.target.value as any)}
-            className="bg-[#0b0814]/80 border border-white/10 text-gray-300 px-2 py-1.5 rounded-lg text-xs font-bold focus:outline-none cursor-pointer hover:bg-white/5 hover:border-pink-500/30 transition-all"
+            className="bg-[#171430]/90 border border-white/10 text-gray-300 px-2 py-1.5 rounded-lg text-xs font-bold focus:outline-none cursor-pointer hover:bg-white/5 hover:border-[#C1FF12]/30 transition-all"
             title="Set Cycle Time"
           >
             <option value="morning">🌅 Morning</option>
@@ -172,7 +172,7 @@ export default function TopBar() {
               <span className="block text-xs font-bold text-gray-200 truncate max-w-[120px]">
                 {user.username}
               </span>
-              <span className="text-[10px] text-pink-400 font-bold font-mono">
+              <span className="text-[10px] text-[#C1FF12] font-bold font-mono">
                 {user.score} pts
               </span>
             </div>

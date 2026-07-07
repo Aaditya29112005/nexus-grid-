@@ -137,7 +137,7 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#020008] z-60 pointer-events-auto flex flex-col items-center justify-between py-12 select-none overflow-hidden font-mono">
+    <div className="fixed inset-0 bg-[#0C0B21] z-60 pointer-events-auto flex flex-col items-center justify-between py-12 select-none overflow-hidden font-mono">
       {/* Liquid Shockwave Portal Canvas */}
       {isEntering && (
         <canvas ref={portalCanvasRef} className="absolute inset-0 block z-70" />
@@ -148,7 +148,7 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
         <span className="text-[10px] tracking-[0.4em] uppercase text-gray-500 font-bold">
           LOADING 5 PHASES
         </span>
-        <span className="text-[9px] text-cyan-400 uppercase tracking-widest font-semibold min-h-[14px]">
+        <span className="text-[9px] text-[#50D5FF] uppercase tracking-widest font-semibold min-h-[14px]">
           {currentPhase}
         </span>
       </div>
@@ -166,8 +166,8 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
           onClick={loaded ? handleEnterClick : undefined}
           animate={{ scale: [1, 1.05, 1] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          className={`w-44 h-44 rounded-full bg-[#020008] border border-cyan-500/10 flex flex-col items-center justify-center relative shadow-[0_0_40px_rgba(0,240,255,0.03)] transition-all duration-300 ${
-            loaded ? 'cursor-pointer hover:border-cyan-400/35 hover:shadow-[0_0_30px_rgba(0,240,255,0.1)]' : ''
+          className={`w-44 h-44 rounded-full bg-[#171430] border border-[#292651] flex flex-col items-center justify-center relative shadow-[0_0_40px_rgba(80,213,255,0.03)] transition-all duration-300 ${
+            loaded ? 'cursor-pointer hover:border-[#C1FF12]/35 hover:shadow-[0_0_30px_rgba(193,255,18,0.15)]' : ''
           }`}
           title={loaded ? 'Click to Enter' : undefined}
         >
@@ -176,8 +176,8 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
             {/* Morphing Egg Outline */}
             <path d="M50,15 C28,45 28,85 50,85 C72,85 72,45 50,15 Z" className="stroke-white/80" />
             {/* Center dividers */}
-            <circle cx="50" cy="62" r="16" className="stroke-cyan-400/60" />
-            <line x1="30" x2="70" y1="62" y2="62" className="stroke-violet-500/50" />
+            <circle cx="50" cy="62" r="16" className="stroke-[#50D5FF]/60" />
+            <line x1="30" x2="70" y1="62" y2="62" className="stroke-[#8A5DFF]/50" />
           </svg>
 
           {/* Progress Percent Counter */}
@@ -192,7 +192,7 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
             className="absolute left-[-110px] flex flex-col items-center gap-1.5 cursor-pointer group animate-fade-in"
             onClick={initializeSound}
           >
-            <div className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-xs text-cyan-400 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all font-bold duration-300">
+            <div className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-xs text-[#C1FF12] hover:border-[#C1FF12]/50 hover:bg-[#C1FF12]/10 transition-all font-bold duration-300">
               {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
             </div>
             <span className="text-[7px] text-gray-500 uppercase tracking-widest text-center">
@@ -207,7 +207,7 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
         {loaded ? (
           <button
             onClick={handleEnterClick}
-            className="px-8 py-3 rounded-full border border-cyan-400/20 bg-cyan-400/5 hover:bg-cyan-400/15 text-white hover:text-cyan-300 font-bold text-xs tracking-[0.35em] uppercase cursor-pointer hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-300 font-mono animate-pulse"
+            className="px-8 py-3 rounded-full border border-[#C1FF12]/30 bg-[#C1FF12]/5 hover:bg-[#C1FF12]/15 text-[#C1FF12] hover:text-white font-bold text-xs tracking-[0.35em] uppercase cursor-pointer shadow-[0_0_20px_rgba(193,255,18,0.1)] hover:shadow-[0_0_30px_rgba(193,255,18,0.25)] transition-all duration-300 font-mono animate-pulse"
           >
             CLICK TO ENTER
           </button>
