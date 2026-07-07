@@ -163,9 +163,13 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
         />
 
         <motion.div
+          onClick={loaded ? handleEnterClick : undefined}
           animate={{ scale: [1, 1.05, 1] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-44 h-44 rounded-full bg-[#020008] border border-cyan-500/10 flex flex-col items-center justify-center relative shadow-[0_0_40px_rgba(0,240,255,0.03)]"
+          className={`w-44 h-44 rounded-full bg-[#020008] border border-cyan-500/10 flex flex-col items-center justify-center relative shadow-[0_0_40px_rgba(0,240,255,0.03)] transition-all duration-300 ${
+            loaded ? 'cursor-pointer hover:border-cyan-400/35 hover:shadow-[0_0_30px_rgba(0,240,255,0.1)]' : ''
+          }`}
+          title={loaded ? 'Click to Enter' : undefined}
         >
           {/* Inner Hatom egg-line visual shape */}
           <svg className="w-16 h-16 stroke-white fill-none stroke-[1.5px]" viewBox="0 0 100 100">
@@ -200,7 +204,7 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
 
       {/* Enter Game CTA Button */}
       <div className="text-center z-10 min-h-[60px] flex flex-col items-center justify-center">
-        {loaded && !isEntering ? (
+        {loaded ? (
           <button
             onClick={handleEnterClick}
             className="px-8 py-3 rounded-full border border-cyan-400/20 bg-cyan-400/5 hover:bg-cyan-400/15 text-white hover:text-cyan-300 font-bold text-xs tracking-[0.35em] uppercase cursor-pointer hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-300 font-mono animate-pulse"
@@ -208,11 +212,9 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
             CLICK TO ENTER
           </button>
         ) : (
-          !isEntering && (
-            <span className="text-[9px] text-gray-500 tracking-[0.3em] uppercase animate-pulse">
-              ESTABLISHING ORBIT
-            </span>
-          )
+          <span className="text-[9px] text-gray-500 tracking-[0.3em] uppercase animate-pulse">
+            ESTABLISHING ORBIT
+          </span>
         )}
       </div>
 
