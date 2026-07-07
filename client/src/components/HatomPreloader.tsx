@@ -9,6 +9,7 @@ interface PreloaderProps {
 }
 
 export default function HatomPreloader({ onComplete }: PreloaderProps) {
+  const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState(0);
   const loaded = progress >= 100;
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -24,8 +25,14 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
   ];
   const currentPhase = phases[Math.floor((progress / 100) * (phases.length - 0.1))];
 
+  // Set mounted status on client load
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Smooth counter counting up
   useEffect(() => {
+    if (!mounted) return;
     let start = 0;
     const interval = setInterval(() => {
       start += Math.floor(Math.random() * 4) + 1;
@@ -37,7 +44,11 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
     }, 120);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [mounted]);
+
+  if (!mounted) {
+    return <div className="fixed inset-0 bg-[#020008] z-60" />;
+  }
 
   // Web Audio opt-in chord synthesis
   const initializeSound = () => {

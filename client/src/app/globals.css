@@ -6,11 +6,15 @@
   --color-cyan: #00f0ff;
   --color-violet: #8b5cf6;
   --color-emerald: #10b981;
+  --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
 body {
