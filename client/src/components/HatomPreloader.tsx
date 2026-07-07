@@ -10,7 +10,7 @@ interface PreloaderProps {
 
 export default function HatomPreloader({ onComplete }: PreloaderProps) {
   const [progress, setProgress] = useState(0);
-  const [loaded, setLoaded] = useState(false);
+  const loaded = progress >= 100;
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
   const portalCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -31,7 +31,6 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
       start += Math.floor(Math.random() * 4) + 1;
       if (start >= 100) {
         start = 100;
-        setLoaded(true);
         clearInterval(interval);
       }
       setProgress(start);
@@ -173,46 +172,36 @@ export default function HatomPreloader({ onComplete }: PreloaderProps) {
         </motion.div>
 
         {/* Sound toggle opt-in circle on the side */}
-        <AnimatePresence>
-          {loaded && !isEntering && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              className="absolute left-[-110px] flex flex-col items-center gap-1.5 cursor-pointer group"
-              onClick={initializeSound}
-            >
-              <div className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-xs text-cyan-400 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all font-bold">
-                {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-              </div>
-              <span className="text-[7px] text-gray-500 uppercase tracking-widest text-center">
-                {soundEnabled ? 'Sound Active' : 'Click for sound'}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {loaded && !isEntering && (
+          <div
+            className="absolute left-[-110px] flex flex-col items-center gap-1.5 cursor-pointer group animate-fade-in"
+            onClick={initializeSound}
+          >
+            <div className="w-12 h-12 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-xs text-cyan-400 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all font-bold duration-300">
+              {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </div>
+            <span className="text-[7px] text-gray-500 uppercase tracking-widest text-center">
+              {soundEnabled ? 'Sound Active' : 'Click for sound'}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Enter Game CTA Button */}
       <div className="text-center z-10 min-h-[60px] flex flex-col items-center justify-center">
-        <AnimatePresence>
-          {loaded && !isEntering && (
-            <motion.button
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              onClick={handleEnterClick}
-              className="px-8 py-3 rounded-full border border-cyan-400/20 bg-cyan-400/5 hover:bg-cyan-400/15 text-white hover:text-cyan-300 font-bold text-xs tracking-[0.35em] uppercase cursor-pointer hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all font-mono"
-            >
-              CLICK TO ENTER
-            </motion.button>
-          )}
-        </AnimatePresence>
-
-        {!loaded && (
-          <span className="text-[9px] text-gray-600 tracking-[0.3em] uppercase">
-            ESTABLISHING ORBIT
-          </span>
+        {loaded && !isEntering ? (
+          <button
+            onClick={handleEnterClick}
+            className="px-8 py-3 rounded-full border border-cyan-400/20 bg-cyan-400/5 hover:bg-cyan-400/15 text-white hover:text-cyan-300 font-bold text-xs tracking-[0.35em] uppercase cursor-pointer hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-all duration-300 font-mono animate-pulse"
+          >
+            CLICK TO ENTER
+          </button>
+        ) : (
+          !isEntering && (
+            <span className="text-[9px] text-gray-500 tracking-[0.3em] uppercase animate-pulse">
+              ESTABLISHING ORBIT
+            </span>
+          )
         )}
       </div>
 
